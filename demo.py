@@ -73,10 +73,10 @@ def main():
 
         ax.scatter(observed_phase, observed_mag, color='k')
         if (partial_lc != 0).all():
-            ax.plot(phases, partial_lc, 'r-')
+            ax.plot(phases, partial_lc, 'r-', linewidth=3)
         else:
             partial_lc += A_0
-        ax.plot(phases, c+A_0, 'g--')
+        ax.plot(phases, c+A_0, color="0.5", linestyle="dashed", linewidth=2)
 
         ax.set_xlabel("Phase")
         ax.set_ylabel("Magnitude")
@@ -92,7 +92,7 @@ def main():
     ax = fig.add_subplot(111)
 
     ax.scatter(observed_phase, observed_mag, color='k')
-    ax.plot(phases, partial_lc, 'r-')
+    ax.plot(phases, partial_lc, 'r-', linewidth=3)
 
     ax.set_xlabel("Phase")
     ax.set_ylabel("Magnitude")

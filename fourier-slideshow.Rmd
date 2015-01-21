@@ -1,12 +1,11 @@
 ---
 output:
-  beamer_presentation:
-    theme: "Berkeley"
-    colortheme: "dolphin"
-    fonttheme: "serif"
+  beamer_presentation
 ---
 
 # OGLE-LMC-CEP-0002
+
+---
 
 \includegraphics[width=0.9\textwidth]{samples/OGLE-LMC-CEP-0002/fourier_00}
 
@@ -28,6 +27,8 @@ output:
 
 
 # OGLE-LMC-CEP-0005
+
+---
 
 \includegraphics[width=0.9\textwidth]{samples/OGLE-LMC-CEP-0005/fourier_00}
 
