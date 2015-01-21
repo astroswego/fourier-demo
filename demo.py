@@ -16,6 +16,9 @@ def get_args():
     parser.add_argument("-o", "--output", type=str,
         default=".",
         help="Directory to output demo plots.")
+    parser.add_argument("-t", "--type", type=str,
+        default="png",
+        help="File type to output plots in. Default is png.")
     parser.add_argument("-p", "--period", type=float,
         help="Period to phase observations by.")
     parser.add_argument("-d", "--fourier-degree", type=int, nargs=2,
@@ -78,7 +81,8 @@ def main():
         ax.set_ylabel("Magnitude")
         ax.set_title("{} component".format(with_ordinal(i)))
 
-        fig.savefig(path.join(args.output, "fourier_{0:02d}.png".format(i)))
+        fig.savefig(path.join(args.output,
+                              "fourier_{0:02d}.".format(i) + args.type))
         plt.close(fig)
 
         partial_lc += c
@@ -93,7 +97,8 @@ def main():
     ax.set_ylabel("Magnitude")
     ax.set_title("Complete Lightcurve")
 
-    fig.savefig(path.join(args.output, "fourier_{0:02d}.png".format(degree+1)))
+    fig.savefig(path.join(args.output,
+                          "fourier_{0:02d}.".format(degree+1) + args.type))
     plt.close(fig)
 
     return 0
