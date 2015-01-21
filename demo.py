@@ -47,11 +47,15 @@ def main():
                                          predictor=predictor,
                                          sigma=PINF)
     lightcurve   = result["lightcurve"]
+    phased_data  = result["phased_data"]
     coefficients = result["coefficients"]
     model        = result["model"]
     degree       = result["degree"]
 
-    mag_min, mag_max = lightcurve.min(), lightcurve.max()
+    observed_phase, observed_mag, *err = phased_data.T
+
+    mag_min = min(lightcurve.min(), observed_mag.min())
+    mag_max = max(lightcurve.max(), observed_mag.max())
 
     phases = arange(0, 1, 0.01)
     design_matrix = Fourier.trigonometric_coefficient_matrix(phases, degree)
@@ -67,7 +71,7 @@ def main():
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        ax.scatter(phases, lightcurve, color='k')
+        ax.scatter(observed_phase, observed_mag, color='k')
         if (partial_lc != 0).all():
             ax.plot(phases, partial_lc, 'r-')
         else:
@@ -87,7 +91,7 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(phases, lightcurve, color='k')
+    ax.scatter(observed_phase, observed_mag, color='k')
     ax.plot(phases, partial_lc, 'r-')
 
     ax.set_xlabel("Phase")

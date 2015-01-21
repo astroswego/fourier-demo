@@ -74,5 +74,3 @@ output:
 ---
 
 \includegraphics[width=0.9\textwidth]{samples/OGLE-LMC-CEP-0005/fourier_11}
-
----

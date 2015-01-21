@@ -53,9 +53,9 @@ docs/_build/
 # PyBuilder
 target/
 
-# eps files LaTeX converted to pdfs
+# pdf files
 
-*-eps-converted-to.pdf
+*.pdf
 
 # Emacs autosave
 *~
