@@ -55,9 +55,6 @@ def main():
 
     phases = arange(0, 1, 0.01)
     design_matrix = Fourier.trigonometric_coefficient_matrix(phases, degree)
-
-    # Now multiply out individual columns from the design matrix
-    # to make the separate harmonics
     raw_components = design_matrix * coefficients
 
     A_0       = raw_components[:, 0]
