@@ -8,7 +8,7 @@ import plotypus.lightcurve as lc
 from plotypus.preprocessing import Fourier
 
 def get_args():
-    parser = ArgumentParser("demo.py")
+    parser = ArgumentParser("fourier_series.py")
 
     parser.add_argument("-i", "--input", type=str,
         help="Table file containing time, magnitude, and (optional) error "
@@ -52,13 +52,16 @@ def main():
     model        = result["model"]
     degree       = result["degree"]
 
-    observed_phase, observed_mag, *err = phased_data.T
-
-    mag_min = min(lightcurve.min(), observed_mag.min())
-    mag_max = max(lightcurve.max(), observed_mag.max())
+    phase_observed, mag_observed, *err = phased_data.T
+    
+    mag_min = min(lightcurve.min(), mag_observed.min())
+    mag_max = max(lightcurve.max(), mag_observed.max())
 
     phases = arange(0, 1, 0.01)
     design_matrix = Fourier.trigonometric_coefficient_matrix(phases, degree)
+
+    # Now multiply out individual columns from the design matrix
+    # to make the separate harmonics
     raw_components = design_matrix * coefficients
 
     A_0       = raw_components[:, 0]
@@ -71,12 +74,12 @@ def main():
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        ax.scatter(observed_phase, observed_mag, color='k')
+        ax.scatter(phase_observed, mag_observed, color='k')
         if (partial_lc != 0).all():
-            ax.plot(phases, partial_lc, 'r-', linewidth=3)
+            ax.plot(phases, partial_lc, 'r-')
         else:
             partial_lc += A_0
-        ax.plot(phases, c+A_0, color="0.5", linestyle="dashed", linewidth=2)
+        ax.plot(phases, c+A_0, 'g--')
 
         ax.set_xlabel("Phase")
         ax.set_ylabel("Magnitude")
@@ -91,8 +94,8 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(observed_phase, observed_mag, color='k')
-    ax.plot(phases, partial_lc, 'r-', linewidth=3)
+    ax.scatter(phase_observed, mag_observed, color='k')
+    ax.plot(phases, partial_lc, 'r-')
 
     ax.set_xlabel("Phase")
     ax.set_ylabel("Magnitude")
