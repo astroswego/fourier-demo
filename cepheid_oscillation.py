@@ -55,10 +55,6 @@ def get_args():
 def linear_map(x, x_min, x_max, y_min, y_max):
     return (x-x_min)*(y_max-y_min)/(x_max-x_min) + y_min
 
-def radius(mag, mag_min, mag_max, rad_min, rad_max):
-    return (mag-mag_min)*(rad_max-rad_min)/(mag_max-mag_min) + rad_min
-
-
 def display(index, phases, mags, output, file_type,
             mag_min=0.0, mag_max=1.0,
             radius_min=0.2, radius_max=0.25,
