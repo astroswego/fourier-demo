@@ -41,10 +41,6 @@ def get_args():
         default=(0.7, 1.0), metavar=["B-MIN", "B-MAX"],
         help="Boundaries on brightness of star visualization on 0-1 scale "
              "(default 0.7, 1.0)")
-    parser.add_argument("--color", type=float, nargs=3,
-        default=(1.0, 1.0, 0.0), metavar=["R", "G", "B"],
-        help="RGB values of star visualization color on 0-1 scale "
-             "(default 1.0, 1.0, 0.0)")
 
     args = parser.parse_args()
 
@@ -58,7 +54,7 @@ def linear_map(x, x_min, x_max, y_min, y_max):
 def display(index, phases, mags, output, file_type,
             mag_min=0.0, mag_max=1.0,
             radius_min=0.2, radius_max=0.25,
-            alpha_min=0.7, alpha_max=1.0,
+            alpha_min=0.1, alpha_max=0.7,
             color=numpy.array([1, 1, 0])):
     fig, axes = plt.subplots(1, 2)
     lc_axis, star_axis = axes
@@ -72,7 +68,7 @@ def display(index, phases, mags, output, file_type,
 
     phase, mag = phases[index], mags[index]
     rad = linear_map(mag, mag_max, mag_min, radius_min, radius_max)
-    col = linear_map(mag, mag_max, mag_min, alpha_min, alpha_max)*color
+    col = (1, 1, linear_map(mag, mag_max, mag_min, alpha_min, alpha_max))
     star = plt.Circle((0.5, 0.5), rad, color=col)
 
     lc_axis.plot(phases, mags, color="b")
