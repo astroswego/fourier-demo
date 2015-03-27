@@ -44,18 +44,18 @@ def get_args():
 
     args = parser.parse_args()
 
-    args.color = numpy.array(args.color)
-
     return args
 
 def linear_map(x, x_min, x_max, y_min, y_max):
     return (x-x_min)*(y_max-y_min)/(x_max-x_min) + y_min
 
-def display(index, phases, mags, output, file_type,
-            mag_min=0.0, mag_max=1.0,
+def display(index, d_radius,
+            phases_fitted, mags_fitted,
+            phases_observed, mags_observed,
+            output, file_type,
+            mag_min, mag_max, mag_mean,
             radius_min=0.2, radius_max=0.25,
-            alpha_min=0.1, alpha_max=0.7,
-            color=numpy.array([1, 1, 0])):
+            alpha_min=0.1, alpha_max=0.7):
     fig, axes = plt.subplots(1, 2)
     lc_axis, star_axis = axes
 
@@ -66,17 +66,23 @@ def display(index, phases, mags, output, file_type,
     star_axis.xaxis.set_visible(False)
     star_axis.yaxis.set_visible(False)
 
-    phase, mag = phases[index], mags[index]
-    rad = linear_map(mag, mag_max, mag_min, radius_min, radius_max)
+    phase, mag = phases_fitted[index], mags_fitted[index]
+    rad = linear_map(d_radius,
+                     mag_mean, -mag_mean,
+                     radius_min, radius_max)
     col = (1, 1, linear_map(mag, mag_max, mag_min, alpha_min, alpha_max))
     star = plt.Circle((0.5, 0.5), rad, color=col)
 
-    lc_axis.plot(phases, mags, color="b")
+    lc_axis.scatter(phases_observed, mags_observed, color="k", s=0.1)
+    lc_axis.plot(phases_fitted, mags_fitted, color="g")
     lc_axis.axvline(x=phase, linewidth=1, color="r")
-    lc_axis.set_xlabel(r"$\phi$")
-    lc_axis.set_ylabel(r"$m$")
+    lc_axis.set_xlabel(r"Time (days)")
+    lc_axis.set_ylabel(r"Magnitude")
+    lc_axis.set_title("Light Curve")
+    lc_axis.set_xlim(0, phases_fitted[-1])
 
     star_axis.add_artist(star)
+    star_axis.set_title("Simulated Star")
 
     fig.savefig(path.join(output, "demo-{0:02d}.{1}".format(index, file_type)))
     plt.close(fig)
@@ -99,14 +105,23 @@ def main():
                                       sigma=numpy.PINF)
 
     lightcurve = result["lightcurve"]
+    phased_data = result["phased_data"]
+
+    phase_observed, mag_observed, *err = phased_data.T
 
     mag_min, mag_max = lightcurve.min(), lightcurve.max()
+    mag_mean = lightcurve.mean()
+
+    d_radius = 0
 
     for i in range(100):
-        display(i, phases, lightcurve, args.output, args.type,
-                mag_min=mag_min, mag_max=mag_max,
-                radius_min=args.radius[0], radius_max=args.radius[1],
-                color=args.color)
+        d_radius += lightcurve[i] - mag_mean
+        display(i, d_radius,
+                phases*args.period, lightcurve,
+                phase_observed*args.period, mag_observed,
+                args.output, args.type,
+                mag_min, mag_max, mag_mean,
+                radius_min=args.radius[0], radius_max=args.radius[1])
 
     return 0
 
