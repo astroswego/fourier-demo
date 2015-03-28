@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from os import path
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 
 import numpy
 from sklearn.linear_model import LinearRegression
@@ -26,7 +27,8 @@ def get_args():
         help="File type to output plots in. Default is png.")
     parser.add_argument("-p", "--period", type=float,
         help="Period to phase observations by.")
-    parser.add_argument("-d", "--fourier-degree", type=int,
+    parser.add_argument("-d", "--fourier-degree", type=int, nargs=2,
+        default=(2, 10), metavar=("MIN-DEGREE", "MAX-DEGREE"),
         help="Degree of fit")
     parser.add_argument("--use-cols", type=int, nargs="+",
         default=(0, 1, 2),
@@ -37,10 +39,9 @@ def get_args():
         default=(0.2, 0.25), metavar=["R-MIN", "R-MAX"],
         help="Boundaries on radius of star visualization "
              "(default 0.2, 0.25)")
-    parser.add_argument("--brightness", type=float, nargs=2,
-        default=(0.7, 1.0), metavar=["B-MIN", "B-MAX"],
-        help="Boundaries on brightness of star visualization on 0-1 scale "
-             "(default 0.7, 1.0)")
+    parser.add_argument("--colors", type=str, nargs="+",
+        default=["#FFFFFF", "#FFFF55"],
+        help="Colors")
 
     args = parser.parse_args()
 
@@ -55,7 +56,7 @@ def display(index, d_radius,
             output, file_type,
             mag_min, mag_max, mag_mean,
             radius_min=0.2, radius_max=0.25,
-            alpha_min=0.1, alpha_max=0.7):
+            color_map=plt.get_cmap("Blues")):
     fig, axes = plt.subplots(1, 2)
     lc_axis, star_axis = axes
 
@@ -70,8 +71,8 @@ def display(index, d_radius,
     rad = linear_map(d_radius,
                      mag_mean, -mag_mean,
                      radius_min, radius_max)
-    col = (1, 1, linear_map(mag, mag_max, mag_min, alpha_min, alpha_max))
-    star = plt.Circle((0.5, 0.5), rad, color=col)
+    mag_norm = (mag - mag_min) / (mag_max - mag_min)
+    star = plt.Circle((0.5, 0.5), rad, color=color_map(mag_norm))
 
     lc_axis.scatter(phases_observed, mags_observed, color="k", s=0.1)
     lc_axis.plot(phases_fitted, mags_fitted, color="g")
@@ -91,6 +92,9 @@ def main():
     args = get_args()
 
     make_sure_path_exists(args.output)
+
+    color_map = colors.LinearSegmentedColormap.from_list("StarColors",
+                                                         args.colors)
 
     predictor = make_predictor(
         regressor=LinearRegression(fit_intercept=False),
@@ -121,7 +125,8 @@ def main():
                 phase_observed*args.period, mag_observed,
                 args.output, args.type,
                 mag_min, mag_max, mag_mean,
-                radius_min=args.radius[0], radius_max=args.radius[1])
+                radius_min=args.radius[0], radius_max=args.radius[1],
+                color_map=color_map)
 
     return 0
 
