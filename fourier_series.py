@@ -58,13 +58,14 @@ def main():
     coefficients = result["coefficients"]
     model        = result["model"]
     degree       = result["degree"]
+    shift        = result["shift"]
 
     phase_observed, mag_observed, *err = phased_data.T
     
     mag_min = min(lightcurve.min(), mag_observed.min())
     mag_max = max(lightcurve.max(), mag_observed.max())
 
-    phases = arange(0, 1, 0.01)
+    phases = (arange(0, 1, 0.01)+shift) % 1.0
     design_matrix = Fourier.design_matrix(phases, degree)
 
     # Now multiply out individual columns from the design matrix
