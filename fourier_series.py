@@ -93,10 +93,11 @@ def main():
         ax.set_ylabel("Magnitude")
         ax.set_title("{} component".format(with_ordinal(i)))
 
-        fig.savefig(path.join(args.output,
-                              args.prefix +
-                              "fourier-{0:02d}.".format(i) +
-                              args.type))
+        fig.savefig(
+            path.join(args.output,
+                      "{0}fourier-series-{1:02d}.{2}".format(args.prefix,
+                                                             i,
+                                                             args.type)))
         plt.close(fig)
 
         partial_lc += c
@@ -112,7 +113,8 @@ def main():
     ax.set_title("Complete Lightcurve")
 
     fig.savefig(path.join(args.output,
-                          "fourier-{0:02d}.".format(degree+1) + args.type))
+                          "{0}fourier-series-complete.{1}".format(args.prefix,
+                                                                  args.type)))
     plt.close(fig)
 
     return 0
