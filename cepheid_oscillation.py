@@ -27,6 +27,9 @@ def get_args():
     parser.add_argument("-t", "--type", type=str,
         default="png",
         help="File type to output plots in. Default is png.")
+    parser.add_argument("-n", "--name", type=str,
+        default="",
+        help="Name of star to use as prefix in output files.")
     parser.add_argument("-p", "--period", type=float,
         help="Period to phase observations by.")
     parser.add_argument("-d", "--fourier-degree", type=int, nargs=2,
@@ -47,6 +50,8 @@ def get_args():
 
     args = parser.parse_args()
 
+    args.prefix = (args.name + "-") if args.name else ""
+
     return args
 
 def linear_map(x, x_min, x_max, y_min, y_max):
@@ -55,7 +60,7 @@ def linear_map(x, x_min, x_max, y_min, y_max):
 def display(index, d_radius,
             phases_fitted, mags_fitted,
             phases_observed, mags_observed,
-            output, file_type,
+            output, prefix, file_type,
             mag_min, mag_max, mag_mean,
             radius_min=0.2, radius_max=0.25,
             color_map=plt.get_cmap("Blues")):
@@ -87,7 +92,10 @@ def display(index, d_radius,
     star_axis.add_artist(star)
     star_axis.set_title("Simulated Star")
 
-    fig.savefig(path.join(output, "demo-{0:02d}.{1}".format(index, file_type)))
+    fig.savefig(path.join(output,
+                          "{0}simulation-{1:02d}.{2}".format(prefix,
+                                                             index,
+                                                             file_type)))
     plt.close(fig)
 
 def main():
@@ -125,7 +133,7 @@ def main():
         display(i, d_radius,
                 phases*args.period, lightcurve,
                 phase_observed*args.period, mag_observed,
-                args.output, args.type,
+                args.output, args.prefix, args.type,
                 mag_min, mag_max, mag_mean,
                 radius_min=args.radius[0], radius_max=args.radius[1],
                 color_map=color_map)
