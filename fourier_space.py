@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
 from os import path
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import Axes3D, proj3d
@@ -8,7 +10,7 @@ import numpy
 from plotypus.preprocessing import Fourier
 
 from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+rc('font', **{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
 
 from plotypus.utils import make_sure_path_exists
@@ -21,7 +23,7 @@ class Arrow3D(FancyArrowPatch):
     def draw(self, renderer):
         xs3d, ys3d, zs3d = self._verts3d
         xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
-        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
         FancyArrowPatch.draw(self, renderer)
 
 def get_args():
@@ -33,6 +35,8 @@ def get_args():
     parser.add_argument("-o", "--output", type=str,
         default=".",
         help="Directory to output demo plots.")
+    parser.add_argument("-n", "--name", type=str,
+        help="Name to use as prefix in all output files.")
     parser.add_argument("-t", "--type", type=str,
         default="png",
         help="File type to output plots in. Default is png.")
@@ -43,22 +47,42 @@ def get_args():
         help="Columns to read time, magnigude, and (optional) error from, "
              "respectively. "
              "Defaults to 0, 1, 2.")
+    parser.add_argument("--temporal",
+        action="store_true",
+        help="Enable 2D temporal plot")
     parser.add_argument("--2d", dest="two_dee",
         action="store_true",
-        help="Enable 2D plot")
+        help="Enable 2D Fourier space plot")
     parser.add_argument("--3d-flat", dest="three_dee_flat",
         action="store_true",
-        help="Enable flat 3D plot")
+        help="Enable flat 3D Fourier space plot")
     parser.add_argument("--3d-rotate", dest="three_dee_rotate",
         action="store_true",
-        help="Enable rotating 3D plot")
+        help="Enable rotating 3D Fourier space plot")
     parser.add_argument("--3d-plane", dest="three_dee_plane",
         action="store_true",
-        help="Enable rotating plane-fit plot")
+        help="Enable rotating 3D Fourier space plane-fit plot")
 
     args = parser.parse_args()
 
     return args
+
+
+def plot_temporal(x, y, x_label, y_label, filename,
+                  color='b', size=10, marker='.'):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(x, y,
+               color=color, s=size, marker=marker)
+
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+
+    fig.savefig(filename)
+
+    plt.close(fig)
+
 
 def plot2d(x, y, x_label, y_label, filename,
            color='b', size=10, marker='.'):
@@ -77,6 +101,7 @@ def plot2d(x, y, x_label, y_label, filename,
     fig.savefig(filename)
 
     plt.close(fig)
+
 
 def plot3d(x, y, z, x_label, y_label, z_label, filename,
            color='b', size=10, marker='.'):
@@ -122,6 +147,7 @@ def plot3drotate(x, y, z, x_label, y_label, z_label, file_prefix, file_type,
         fig.savefig("{0}-{1:03d}.{2}".format(file_prefix, i, file_type))
 
     plt.close(fig)
+
 
 def plot3dplane(x, y, z, A_0, a, b,
                 x_label, y_label, z_label, file_prefix, file_type,
@@ -183,28 +209,39 @@ def main():
     coeffs, *_ = numpy.linalg.lstsq(design_matrix, mag)
     A_0, a, b = coeffs
 
+    if args.temporal:
+        plot_temporal((phase/args.period)%1.0, mag,
+                      r"$t$", r"$y(t)$",
+                      path.join(args.output,
+                                args.name + "-temporal-space." + args.type))
+
     if args.two_dee:
         plot2d(design_matrix[:,1], design_matrix[:,2],
                r"$\sin(1 \omega t)$", r"$\cos(1 \omega t)$",
-               path.join(args.output, "2D-fourier-space." + args.type))
+               path.join(args.output,
+                         args.name + "-2D-fourier-space." + args.type))
 
     if args.three_dee_flat:
         plot3d(design_matrix[:,1], design_matrix[:,2], mag,
                r"$\sin(1 \omega t)$", r"$\cos(1 \omega t)$", r"$m$",
-               path.join(args.output, "3D-fourier-space." + args.type))
+               path.join(args.output,
+                         args.name + "-3D-fourier-space." + args.type))
 
     if args.three_dee_rotate:
         plot3drotate(design_matrix[:,1], design_matrix[:,2], mag,
                      r"$\sin(1 \omega t)$", r"$\cos(1 \omega t)$", r"$m$",
-                     path.join(args.output, "3D-fourier-space"), args.type)
+                     path.join(args.output,
+                               args.name + "-3D-fourier-space"), args.type)
 
     if args.three_dee_plane:
         plot3dplane(design_matrix[:,1], design_matrix[:,2], mag,
                     A_0, a, b,
                     r"$\sin(1 \omega t)$", r"$\cos(1 \omega t)$", r"$m$",
-                    path.join(args.output, "3D-fourier-space-plane"), args.type)
+                    path.join(args.output,
+                              args.name + "-3D-fourier-space-plane"), args.type)
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())

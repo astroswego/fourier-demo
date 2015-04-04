@@ -2,6 +2,8 @@ from argparse import ArgumentParser
 from itertools import chain
 from os import path
 from numpy import arange, PINF, zeros
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import plotypus.lightcurve as lc
@@ -16,22 +18,27 @@ def get_args():
     parser.add_argument("-o", "--output", type=str,
         default=".",
         help="Directory to output demo plots.")
+    parser.add_argument("-n", "--name", type=str,
+        default="",
+        help="Name of star to use as prefix in output filenames")
     parser.add_argument("-t", "--type", type=str,
         default="png",
         help="File type to output plots in. Default is png.")
     parser.add_argument("-p", "--period", type=float,
         help="Period to phase observations by.")
     parser.add_argument("-d", "--fourier-degree", type=int, nargs=2,
-        default=(1, 10), metavar=["MIN", "MAX"],
+        default=(1, 10), metavar=("MIN", "MAX"),
         help="Lower and upper bounds on degree of Fourier series. "
              "Defaults to [1, 10].")
     parser.add_argument("--use-cols", type=int, nargs="+",
-        default=(0, 1, 2),
+        default=(0, 1, 2), metavar="C",
         help="Columns to read time, magnigude, and (optional) error from, "
              "respectively. "
              "Defaults to 0, 1, 2.")
 
     args = parser.parse_args()
+
+    args.prefix = (args.name + "-") if args.name else ""
 
     return args
 
@@ -74,19 +81,21 @@ def main():
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        ax.scatter(phase_observed, mag_observed, color='k')
+        ax.scatter(phase_observed, mag_observed, color="k")
         if (partial_lc != 0).all():
-            ax.plot(phases, partial_lc, 'r-')
+            ax.plot(phases, partial_lc, "r-")
         else:
             partial_lc += A_0
-        ax.plot(phases, c+A_0, 'g--')
+        ax.plot(phases, c+A_0, "g--")
 
         ax.set_xlabel("Phase")
         ax.set_ylabel("Magnitude")
         ax.set_title("{} component".format(with_ordinal(i)))
 
         fig.savefig(path.join(args.output,
-                              "fourier_{0:02d}.".format(i) + args.type))
+                              args.prefix +
+                              "fourier-{0:02d}.".format(i) +
+                              args.type))
         plt.close(fig)
 
         partial_lc += c
@@ -94,15 +103,15 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(phase_observed, mag_observed, color='k')
-    ax.plot(phases, partial_lc, 'r-')
+    ax.scatter(phase_observed, mag_observed, color="k")
+    ax.plot(phases, partial_lc, "r-")
 
     ax.set_xlabel("Phase")
     ax.set_ylabel("Magnitude")
     ax.set_title("Complete Lightcurve")
 
     fig.savefig(path.join(args.output,
-                          "fourier_{0:02d}.".format(degree+1) + args.type))
+                          "fourier-{0:02d}.".format(degree+1) + args.type))
     plt.close(fig)
 
     return 0
@@ -110,9 +119,9 @@ def main():
 
 def with_ordinal(n):
     if 10 <= n % 100 < 20:
-        return str(n) + 'th'
+        return str(n) + "th"
     else:
-       return  str(n) + {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
+       return  str(n) + {1 : "st", 2 : "nd", 3 : "rd"}.get(n % 10, "th")
 
 
 if __name__ == "__main__":
