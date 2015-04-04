@@ -65,8 +65,8 @@ def main():
     mag_min = min(lightcurve.min(), mag_observed.min())
     mag_max = max(lightcurve.max(), mag_observed.max())
 
-    phases = (arange(0, 1, 0.01)-shift) % 1.0
-    design_matrix = Fourier.design_matrix(phases, degree)
+    phases = arange(0, 1, 0.01)
+    design_matrix = Fourier.design_matrix(phases+shift, degree)
 
     # Now multiply out individual columns from the design matrix
     # to make the separate harmonics
